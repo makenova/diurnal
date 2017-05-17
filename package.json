@@ -1,0 +1,36 @@
+{
+  "name": "diurnal",
+  "version": "0.0.0",
+  "description": "a simple journaling app",
+  "main": "index.js",
+  "bin": {
+    "diurnal": "./index.js"
+  },
+  "scripts": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/makenova/diurnal.git"
+  },
+  "keywords": [
+    "journal"
+  ],
+  "author": "makenova",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/makenova/diurnal/issues"
+  },
+  "homepage": "https://github.com/makenova/diurnal#readme",
+  "devDependencies": {
+    "ava": "^0.19.1",
+    "eslint": "^3.19.0",
+    "eslint-config-standard": "^10.2.1",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-node": "^4.2.2",
+    "eslint-plugin-promise": "^3.5.0",
+    "eslint-plugin-standard": "^3.0.1"
+  },
+  "dependencies": {
+    "minimist": "^1.2.0"
+  }
+}
