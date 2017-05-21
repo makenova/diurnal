@@ -58,11 +58,19 @@ function createDirIfNecessary (filepath, callback) {
   })
 }
 
+function leftpad (string, pad, stringlength) {
+  while (string.length < stringlength) {
+    string = `${pad}${string}`
+  }
+
+  return string
+}
+
 function newEntry (title) {
   const NL = os.EOL
   const today = new Date()
-  const dayString = today.getDate().toString()
-  const monthString = (today.getMonth() + 1).toString()
+  const dayString = leftpad(today.getDate().toString(), '0', 2)
+  const monthString = leftpad((today.getMonth() + 1).toString(), '0', 2)
   const yearString = today.getFullYear().toString()
 
   const diurnalFileName = `${yearString}${monthString}${dayString}`
@@ -102,9 +110,38 @@ function listEntries () {
       return
     }
 
-    files.forEach(function (file) {
-      console.log(file)
+    files.forEach((file) => {
+      const fileName = file.slice(0, file.indexOf('.md'))
+      const filePath = path.resolve(ENTRIES_DIR, file)
+      const fileContent = fs.readFileSync(filePath, 'utf8')
+      const fileTitle = fileContent.slice(fileContent.indexOf('##') + 2, fileContent.indexOf(os.EOL, fileContent.indexOf('##'))).trim()
+
+      console.log(`${fileName} - ${fileTitle}`)
     })
+  })
+}
+
+function purgeFile (filename) {
+  if (typeof filename === 'boolean') {
+    return handleError(new Error('No file to purge'), 'Provide a file name to purge.')
+  }
+
+  fs.readdir(ENTRIES_DIR, (err, files) => {
+    if (err) handleError(err, 'Cannot read diurnal folder.')
+    if (files < 1) {
+      handleError(new Error('No entries to purge'), 'You have no entries to purge.')
+    }
+
+    if (files.includes(filename + '.md')) {
+      fs.unlink(path.resolve(ENTRIES_DIR, filename + '.md'), (err) => {
+        if (err) return handleError(err, 'Could not delete your entry.')
+
+        console.log(`${filename} deleted!`)
+      })
+    } else {
+      let message = 'Cannot purge, file not found'
+      handleError(new Error(message), message)
+    }
   })
 }
 
@@ -113,6 +150,8 @@ module.exports = function (args) {
     printHelp()
   } else if (args.l) {
     listEntries(args.l || 10)
+  } else if (args.p) {
+    purgeFile(args.p)
   }
 }
 
