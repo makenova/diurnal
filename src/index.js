@@ -1,9 +1,9 @@
-var fs = require('fs')
-var os = require('os')
-var path = require('path')
+const fs = require('fs')
+const os = require('os')
+const path = require('path')
 
-var HOME = os.homedir()
-var ENTRIES_DIR = process.env.DIURNAL_DIR || path.resolve(HOME + '/.diurnal')
+const HOME = os.homedir()
+const ENTRIES_DIR = process.env.DIURNAL_DIR || path.resolve(HOME + '/.diurnal')
 
 function handleError (err, message) {
   if (process.env.NODE_ENV === 'makenova_dev') {
@@ -31,6 +31,7 @@ function printHelp () {
       -h    print this help text
       -l    list journal entries
       -p    purge(delete) a journal entry
+      -t    create a new entry with a title or override today's current title
 
     Examples
       $ diurnal -l
@@ -58,15 +59,20 @@ function createDirIfNecessary (filepath, callback) {
 }
 
 function newEntry (title) {
-  var today = new Date()
-  var diurnalDate = today.getFullYear().toString() + (today.getMonth() + 1).toString() + today.getDate()
+  const NL = os.EOL
+  const today = new Date()
+  const dayString = today.getDate().toString()
+  const monthString = (today.getMonth() + 1).toString()
+  const yearString = today.getFullYear().toString()
 
-  var fileData = '# ' + diurnalDate + '\n'
+  const diurnalFileName = `${yearString}${monthString}${dayString}`
+
+  let fileData = `# ${monthString}-${dayString}-${yearString}${NL}`
   if (title) {
-    fileData += '\n' + '## ' + title + '\n'
+    fileData += `${NL}## ${title}${NL}${NL}`
   }
 
-  var filePath = ENTRIES_DIR + '/' + diurnalDate + '.md'
+  var filePath = path.resolve(ENTRIES_DIR, `${diurnalFileName}.md`)
 
   createDirIfNecessary(ENTRIES_DIR, function (err) {
     if (err) return handleError(err, 'Failed to create diurnal folder.')
