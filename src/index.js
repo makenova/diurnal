@@ -25,7 +25,7 @@ function printHelp () {
       A simple journaling application
 
     Usage
-      $ diurnal [-hlp]
+      $ diurnal [-hlpt]
 
     Commands
       -h    print this help text
@@ -40,7 +40,7 @@ function printHelp () {
       20170616 - Forever alone
 
       $ diurnal -p 20170614
-      one journal entry purged
+      One journal entry, 20170614 purged.
   `)
 }
 
@@ -96,6 +96,7 @@ function newEntry (title) {
         handleError(err, 'Could not create an entry(1).')
       } else {
         console.log(data)
+        process.exit(0)
       }
     })
   })
@@ -111,17 +112,22 @@ function listEntries () {
     }
 
     files.forEach((file) => {
-      const fileName = file.slice(0, file.indexOf('.md'))
+      const filename = file.slice(0, file.indexOf('.md'))
       const filePath = path.resolve(ENTRIES_DIR, file)
       const fileContent = fs.readFileSync(filePath, 'utf8')
-      const fileTitle = fileContent.slice(fileContent.indexOf('##') + 2, fileContent.indexOf(os.EOL, fileContent.indexOf('##'))).trim()
+      let titleIndex = fileContent.indexOf('##')
+      let fileTitle = 'No title'
 
-      console.log(`${fileName} - ${fileTitle}`)
+      if (titleIndex >= 0) {
+        fileTitle = fileContent.slice(titleIndex + 2, fileContent.indexOf(os.EOL, titleIndex)).trim()
+      }
+
+      console.log(`${filename} - ${fileTitle}`)
     })
   })
 }
 
-function purgeFile (filename) {
+function purgeEntry (filename) {
   if (typeof filename === 'boolean') {
     return handleError(new Error('No file to purge'), 'Provide a file name to purge.')
   }
@@ -133,10 +139,12 @@ function purgeFile (filename) {
     }
 
     if (files.includes(filename + '.md')) {
+      // TODO: use trash instead and accept a -f option to skip the trash.
       fs.unlink(path.resolve(ENTRIES_DIR, filename + '.md'), (err) => {
         if (err) return handleError(err, 'Could not delete your entry.')
 
         console.log(`${filename} deleted!`)
+        console.log(`One journal entry, ${filename} purged.`)
       })
     } else {
       let message = 'Cannot purge, file not found'
@@ -151,7 +159,7 @@ module.exports = function (args) {
   } else if (args.l) {
     listEntries(args.l || 10)
   } else if (args.p) {
-    purgeFile(args.p)
+    purgeEntry(args.p)
   }
 }
 
